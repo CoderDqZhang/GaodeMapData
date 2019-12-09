@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no, width=device-width">
+    <title>POI详情页</title>
+    <link rel="stylesheet" href="https://a.amap.com/jsapi_demos/static/demo-center/css/demo-center.css"/>
+    <style>
+        html, body, #container {
+            height: 100%;
+        }
+
+        .marker {
+            width: 22px;
+            height: 36px;
+            background-image: url(https://webapi.amap.com/theme/v1.3/markers/b/mark_b.png);
+            background-size: 22px 36px;
+            text-align: center;
+            line-height: 24px;
+            color: #fff
+        }
+    </style>
+</head>
+<body>
+<div id="container"></div>
+<div class="info" style='min-width:10rem;'>
+    <img src="//a.amap.com/lbs/static/img/js-poisearch.png" style='width:120px;height:120px'>
+    <div style='text-align: center'>手机扫码打开示例</div>
+</div>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>
+<script type="text/javascript"
+        src="https://webapi.amap.com/maps?v=1.4.15&key=b7516f5cd8668e5f89f8c4be3d1b4c1d&plugin=AMap.ToolBar"></script>
+<script>
+
+    var page = 1
+    citys = {{ citys | safe }};
+    for (i = 0; i < citys.length; i++) {
+        get_all_data(page, citys[i]['citycode'], '奶茶')
+     }
+
+    function get_all_data(page,city, keyword) {
+        var url = 'https://restapi.amap.com/v3/place/text?s=rsv3&children=&key=b7516f5cd8668e5f89f8c4be3d1b4c1d&' +
+            'city=' + city +
+            '&offset=20&' +
+            '&keywords=粥&'+
+            'page=' + page +
+            '&callback=jsonp_701621_&platform=JS'
+        console.log(url)
+        $.ajax({
+            url: url,    //请求的url地址
+            dataType: "text",   //返回格式为json
+            async: true,//请求是否异步，默认为异步，这也是ajax重要特性
+            data: {},    //参数值
+            type: "GET",   //请求方式
+            beforeSend: function () {
+                //请求前的处理
+
+            },
+            success: function (req) {
+                //请求成功时处理
+                result = req.substring(14, req.length - 1)
+                page_size = JSON.parse(result)
+                page = page + 1
+
+                if (page < parseInt(page_size['count'] / 20)){
+                    get_all_data(page,city,keyword)
+                }
+                $.ajax({
+                    url: '../../map/insertinfo/',    //请求的url地址
+                    dataType: "json",   //返回格式为json
+                    async: true,//请求是否异步，默认为异步，这也是ajax重要特性
+                    data: {'data':result},    //参数值
+                    type: "GET",   //请求方式
+                    beforeSend: function () {
+                        //请求前的处理
+
+                    },
+                    success: function (req) {
+                        //请求成功时处
+                    },
+                    complete: function (req) {
+                        //请求完成的处理
+                        console.log(req)
+                    },
+                    error: function (req) {
+                        //请求出错处理
+                        console.log(req)
+                    }
+                });
+            },
+            complete: function (req) {
+                //请求完成的处理
+                console.log(req)
+            },
+            error: function (req) {
+                //请求出错处理
+                console.log(req)
+            }
+        });
+
+
+
+
+    }
+
+</script>
+</body>
+</html>
